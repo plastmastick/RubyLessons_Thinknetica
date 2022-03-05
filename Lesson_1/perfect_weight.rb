@@ -11,5 +11,6 @@ user_weight = (user_height - 110) * 1.15
 #Проверка веса
 if user_weight >= 0
   puts "#{user_name}, Ваш вес уже оптимальный."
-else puts "#{user_name}, Ваш вес не оптимальный."
+else
+  puts "#{user_name}, Ваш вес не оптимальный."
 end
