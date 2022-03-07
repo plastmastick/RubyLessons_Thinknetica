@@ -1,7 +1,7 @@
 # Первое задание
 puts "Вывести месяца, где кол-во дней ровно 30: \n"
 
-mounth_hash = {
+mounth_day_count = {
   Январь: 31,
   Февраль: 28,
   Март: 31,
@@ -16,20 +16,20 @@ mounth_hash = {
   Декабрь: 31
 }
 
-mounth_hash.each {|mounth,day| print "#{mounth}; " if day == 30}
+mounth_day_count.each {|mounth,day| print "#{mounth}; " if day == 30}
 
 #Второе задание
 puts "\n \nЗаполнить массив числами от 10 до 100 с шагом 5:"
 
-task_array = []
+task = []
 i = 10
 
 while i <= 100 do
-  task_array << i
+  task << i
   i += 5
 end
 
-puts "#{task_array}"
+puts "#{task}"
 
 #Третье задание
 puts "\nЗаполнить массив числами фибоначчи до 100:"
