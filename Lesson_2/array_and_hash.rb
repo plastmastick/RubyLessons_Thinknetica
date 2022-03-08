@@ -16,7 +16,7 @@ mounth_day_count = {
   Декабрь: 31
 }
 
-mounth_day_count.each { |mounth,day| print "#{mounth}; " if day == 30 }
+mounth_day_count.each { |mounth, day| print "#{mounth}; " if day == 30 }
 
 #Второе задание
 puts "\n \nЗаполнить массив числами от 10 до 100 с шагом 5:"
