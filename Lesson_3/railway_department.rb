@@ -6,17 +6,10 @@ class Station
     @trains = []
   end
 
-  #Прибытие поезда на станцию
-  def add_train(train)
-    @trains << train #проверка на существовании поезда
-    #устаовить текущую станцию поезда
-
-  end
-
   #Список всех поездов на станции
   def show_trains
     puts "Список поездов:"
-    @trains.each { |train| puts "#{train.number}" }   #Скорректировать
+    @trains.each { |train| puts "#{@trains.index(train) + 1}) №#{train.number};" }
   end
 
   #Список поездов на станции по типу
@@ -35,15 +28,40 @@ class Station
     puts "Пассажирских: #{passenger_trains}\nГрузовых: #{cargo_trains}"
   end
 
+  #Прибытие поезда на станцию
+  def add_train(train)
+    if !@trains.include?(train)
+      @trains << train
+      puts "\nПоезд №#{train.number} прибыл на станцию '#{self.name}'"
+    else
+      puts "Поезд уже на станции!"
+    end
+  end
+
+  #Удаление поезда со станции
+  def delete_train(train)
+    if @trains.include?(train)
+      @trains.delete(train)
+      puts "\nПоезд №#{train.number} покинул на станцию '#{self.name}'"
+    else
+      puts "Поезда №#{train.number} нет на станции!"
+    end
+  end
+
   #Отправка поезда со станции
-  def send_train(train)
-    #Смена станции поезда
-    train.next_station
+  def send_train(train, forward = true)
+    if forward && @trains.include?(train)
+      train.next_station
+    elsif !forward && @trains.include?(train)
+      train.previous_station
+    else
+      puts "Поезда №#{train.number} нет на станции!"
+    end
+  end
 
-    #установить текущую станцию поезда
-
-    #Удаление поезда со станции
-    @trains.delete(train)
+  #Отправка поезда при удалении станции из маршрута
+  def send_train_update(route)
+    @trains.each { |train| send_train(train) if train.train_route == route }
   end
 end
 
@@ -51,22 +69,29 @@ end
 class Route
   attr_reader :route
 
-  def initialize(start_station, end_station)  #Добавить промежуточную станцию
+  def initialize(start_station, end_station)
     @route = []
     @route << start_station
     @route << end_station
   end
 
+  #Добавление промежуточной станции
   def add_station(station)
-    @route.insert(@route.lenght - 1, station) #проверка на существовании станции
+    if !@route.include?(station)
+      @route.insert(@route.length - 1, station)
+    else
+      puts "#{station.name} уже есть в маршруте!"
+    end
   end
 
+  #Удаление промежуточной станции
   def delete_station(station)
-    puts "Станции #{station} нет в маршруте!" if !@route.include?(station)
-    @route.delete(station)
-
-    #перемещение всех поездов на предыдущую станцию
-
+    if @route.include?(station) && ![0, @route.length - 1].include?(@route.index(station))
+      station.send_train_update(self) #Отправка поезда при удалении станции из маршрута
+      @route.delete(station)
+    else
+      puts "Станции '#{station.name}' нет в маршруте или она не является промежуточной!"
+    end
   end
 
   def show_route
@@ -77,13 +102,14 @@ end
 
 
 class Train
-  attr_reader :type, :speed, :wagons_count, :number
+  attr_reader :type, :speed, :wagons_count, :number, :train_route
 
   def initialize(number, type, wagons_count)
     #type 1 - Пассажирский; type 2 - Грузовой
     @number = number
     @type = type.to_i
     @wagons_count = wagons_count.to_i
+    @current_station
   end
 
   #Увеличение скорости
@@ -98,14 +124,14 @@ class Train
 
   #Прицепка/отцепка
   def change_wagons(remove = false)
-    #Добавить проверку на пребывание поезда на станции
-
-    #Прицепка/отцепка
-    puts remove ? "Отцеплен 1 вагон" : "Прицеплен 1 вагон"
-    if remove
+    if remove && @current_station != nil
+      puts "Отцеплен 1 вагон"
       @wagons_count -= 1
-    else
+    elsif !remove && @current_station != nil
+      puts "Прицеплен 1 вагон"
       @wagons_count += 1
+    else
+      puts "Поезд не находится на станции!"
     end
   end
 
@@ -113,28 +139,42 @@ class Train
   def set_route(route)
     @train_route = route
     @current_station = @train_route.route[0]
-    #добавить поезд на станцию
-    @current_station.add_train(self) #проверка на существовании поезда
+    @current_station.add_train(self)  #Добавить поезд на станцию
   end
 
   #Следующая станция
   def next_station
-    station_index = @train_route.index(@current_station)
-    @current_station = @train_route.route[station_index + 1] #ограничение диапазона
+    station_index = @train_route.route.index(@current_station)
+
+    if station_index != @train_route.route.length - 1
+      @current_station.delete_train(self)
+      @current_station = @train_route.route[station_index + 1]
+      @current_station.add_train(self)  #Добавить поезд на станцию
+    else
+      puts "Поезд достиг конечной станции!"
+    end
   end
 
   #Предыдущая станцию
   def previous_station
-    station_index = @train_route.index(@current_station)
-    @current_station = @train_route.route[station_index - 1] #ограничение диапазона
+    station_index = @train_route.route.index(@current_station)
+
+    if station_index != 0
+      @current_station.delete_train(self)
+      @current_station = @train_route.route[station_index - 1]
+      @current_station.add_train(self)  #Добавить поезд на станцию
+    else
+      puts "Поезд находится на начальной станции!"
+    end
   end
 
   #Информация о маршруте
   def route_info
-    #Ограничение станций
-    current_station = @train_route[@train_route.index(@current_station)]
-    previous_station = @train_route[current_station - 1]
-    second_station = @train_route[current_station + 1]
-    puts "Предыдущая станция: #{previous_station};\nТекущая станция: #{current_station};\nСледующая станция: #{second_station}"
+    station_index = @train_route.route.index(@current_station)
+
+    station_index != 0 ? previous_station = @train_route.route[station_index - 1].name : previous_station = "Отсутствует"
+    station_index != @train_route.route.length - 1 ? second_station = @train_route.route[station_index + 1].name : second_station = "Отсутствует"
+
+    puts "Предыдущая станция: #{previous_station};\nТекущая станция: #{@current_station.name};\nСледующая станция: #{second_station}"
   end
 end
