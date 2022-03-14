@@ -70,9 +70,7 @@ class Route
   attr_reader :route
 
   def initialize(start_station, end_station)
-    @route = []
-    @route << start_station
-    @route << end_station
+    @route = [start_station, end_station]
   end
 
   #Добавление промежуточной станции
@@ -86,7 +84,7 @@ class Route
 
   #Удаление промежуточной станции
   def delete_station(station)
-    if @route.include?(station) && ![0, @route.length - 1].include?(@route.index(station))
+    if @route.include?(station) && ![@route.first, @route.last].include?(station)
       station.send_train_update(self) #Отправка поезда при удалении станции из маршрута
       @route.delete(station)
     else
@@ -109,7 +107,7 @@ class Train
     @number = number
     @type = type.to_i
     @wagons_count = wagons_count.to_i
-    @current_station
+    @speed = 0
   end
 
   #Увеличение скорости
@@ -122,16 +120,23 @@ class Train
     @speed = 0
   end
 
-  #Прицепка/отцепка
-  def change_wagons(remove = false)
-    if remove && @current_station != nil
-      puts "Отцеплен 1 вагон"
-      @wagons_count -= 1
-    elsif !remove && @current_station != nil
+  #Прицепка
+  def add_wagon
+    if @speed != 0
       puts "Прицеплен 1 вагон"
       @wagons_count += 1
     else
-      puts "Поезд не находится на станции!"
+      puts "Поезд находится в движении!"
+    end
+  end
+
+  #Отцепка
+  def remove_wagon
+    if @speed != 0
+      puts "Отцеплен 1 вагон"
+      @wagons_count -= 1
+    else
+      puts "Поезд находится в движении!"
     end
   end
 
