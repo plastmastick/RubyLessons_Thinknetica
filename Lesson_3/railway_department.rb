@@ -122,7 +122,7 @@ class Train
 
   #Прицепка
   def add_wagon
-    if @speed != 0
+    if @speed == 0
       puts "Прицеплен 1 вагон"
       @wagons_count += 1
     else
@@ -132,7 +132,7 @@ class Train
 
   #Отцепка
   def remove_wagon
-    if @speed != 0
+    if @speed == 0
       puts "Отцеплен 1 вагон"
       @wagons_count -= 1
     else
