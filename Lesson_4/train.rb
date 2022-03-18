@@ -1,0 +1,72 @@
+class Train
+  attr_reader :type, :speed, :number, :train_route, :current_station, :route_info
+
+  def initialize(number)
+    @number = number
+    @type = self.train_type
+    @wagons = []
+    @speed = 0
+    @current_station = nil
+    @train_route = nil
+  end
+
+  def increase_speed
+    self.speed += 10
+  end
+
+  def stop
+    self.speed = 0
+  end
+
+  def add_wagon(wagon)
+    @wagons << wagon if self.speed == 0 && correct_wagon?(wagon)
+  end
+
+  def remove_wagon(wagon)
+    @wagons.delete(wagon) if self.speed == 0 && correct_wagon?(wagon)
+  end
+
+  def set_route(route)
+    @train_route = route
+    @current_station = @train_route.route[0]
+    @current_station.add_train(self)
+  end
+
+  def next_station
+    if @train_route.route.last != @current_station
+      nearby_stations = self.route_info
+      @current_station = nearby_stations[1]
+      @current_station.add_train(self)
+    end
+  end
+
+  def previous_station
+    if @train_route.route.first != @current_station
+      nearby_stations = self.route_info
+      @current_station = nearby_stations[0]
+      @current_station.add_train(self)
+    end
+  end
+
+  def route_info
+    route = @train_route.route
+    @current_station != route.first ? previous_station = route[route.index(@current_station) - 1] : previous_station = nil
+    @current_station != route.last ? next_station = route[route.index(@current_station) + 1] : next_station = nil
+    return [previous_station, next_station]
+  end
+
+  protected
+
+  #Влиять на скорость можно только через методы
+  attr_writer :speed
+
+  #Тип - константа класса, есть подклассы
+  def train_type
+    "undefined"
+  end
+
+  #Внутрення проверка, которая используется в подклассах
+  def correct_wagon?(wagon)
+    wagon.type == self.type && wagon.type != "undefined"
+  end
+end
