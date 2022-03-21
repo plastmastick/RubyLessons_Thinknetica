@@ -1,5 +1,5 @@
 class Train
-  attr_reader :type, :speed, :number, :train_route, :current_station, :route_info
+  attr_reader :type, :speed, :number, :train_route, :current_station, :route_info, :wagons
 
   def initialize(number)
     @number = number
@@ -19,11 +19,23 @@ class Train
   end
 
   def add_wagon(wagon)
-    @wagons << wagon if self.speed == 0 && correct_wagon?(wagon)
+    if self.speed == 0 && correct_wagon?(wagon) && !self.wagons.include?(wagon)
+      self.wagons << wagon
+      wagon.train=(self)
+      return true
+    else
+      return false
+    end
   end
 
   def remove_wagon(wagon)
-    @wagons.delete(wagon) if self.speed == 0 && correct_wagon?(wagon)
+    if self.speed == 0 && self.wagons.include?(wagon)
+      self.wagons.delete(wagon)
+      wagon.train=(nil)
+      return true
+    else
+      return false
+    end
   end
 
   def set_route(route)
@@ -36,7 +48,10 @@ class Train
     if @train_route.route.last != @current_station
       nearby_stations = self.route_info
       @current_station = nearby_stations[1]
-      @current_station.add_train(self)
+      return false if !@current_station.add_train(self)
+      return true
+    else
+      return false
     end
   end
 
@@ -44,7 +59,10 @@ class Train
     if @train_route.route.first != @current_station
       nearby_stations = self.route_info
       @current_station = nearby_stations[0]
-      @current_station.add_train(self)
+      return false if !@current_station.add_train(self)
+      return true
+    else
+      return false
     end
   end
 
@@ -58,7 +76,7 @@ class Train
   protected
 
   #Влиять на скорость можно только через методы
-  attr_writer :speed
+  attr_writer :speed, :wagons
 
   #Тип - константа класса, есть подклассы
   def train_type

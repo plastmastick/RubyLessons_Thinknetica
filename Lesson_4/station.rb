@@ -8,27 +8,39 @@ class Station
 
   def show_trains_by_type(train_type)
     trains_by_type = []
-    @trains.each { |train| trains_by_type << train if train.type == train_type}
+    self.trains.each { |train| trains_by_type << train if train.type == train_type}
+    return trains_by_type
   end
 
   def add_train(train)
-    @trains << train if !@trains.include?(train) && train.current_station == self
+    if !@trains.include?(train) && train.current_station == self
+      self.trains << train
+      return true
+    else
+      return false
+    end
   end
 
   def send_train(train, forward)
-    if @trains.include?(train) && train.current_station == self
-      train.next_station if forward
-      train.previous_station if !forward
+    if self.trains.include?(train) && train.current_station == self
+      if forward
+        return false if !train.next_station
+      else
+        return false if !train.previous_station
+      end
       self.delete_train(train)
+      return true
     else
-      self.delete_train(train)
+      return false
     end
   end
 
   private
 
+  attr_writer :trains
+
   #Нет подклассов. Поезд не должен удалять сам себя, т.к. отправкой занимается станция
   def delete_train(train)
-    @trains.delete(train) if @trains.include?(train) && train.current_station != self
+    self.trains.delete(train) if @trains.include?(train) && train.current_station != self
   end
 end

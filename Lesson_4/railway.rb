@@ -10,7 +10,7 @@ class Railway
 
   def show_empty_wagons
     empty_wagons = []
-    railway.wagons.each { |wagon| empty_wagons << wagon if wagon.train == nil }
+    self.wagons.each { |wagon| empty_wagons << wagon if wagon.train == nil }
     return empty_wagons
   end
 end
