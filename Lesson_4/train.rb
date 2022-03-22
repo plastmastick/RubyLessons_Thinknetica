@@ -22,9 +22,9 @@ class Train
     if self.speed == 0 && correct_wagon?(wagon) && !self.wagons.include?(wagon)
       self.wagons << wagon
       wagon.train=(self)
-      return true
+      true
     else
-      return false
+      false
     end
   end
 
@@ -32,9 +32,9 @@ class Train
     if self.speed == 0 && self.wagons.include?(wagon)
       self.wagons.delete(wagon)
       wagon.train=(nil)
-      return true
+      true
     else
-      return false
+      false
     end
   end
 
@@ -49,9 +49,9 @@ class Train
       nearby_stations = self.route_info
       @current_station = nearby_stations[1]
       return false if !@current_station.add_train(self)
-      return true
+      true
     else
-      return false
+      false
     end
   end
 
@@ -60,9 +60,9 @@ class Train
       nearby_stations = self.route_info
       @current_station = nearby_stations[0]
       return false if !@current_station.add_train(self)
-      return true
+      true
     else
-      return false
+      false
     end
   end
 

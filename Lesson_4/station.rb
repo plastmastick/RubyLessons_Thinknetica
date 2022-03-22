@@ -15,9 +15,9 @@ class Station
   def add_train(train)
     if !@trains.include?(train) && train.current_station == self
       self.trains << train
-      return true
+      true
     else
-      return false
+      false
     end
   end
 
@@ -29,9 +29,9 @@ class Station
         return false if !train.previous_station
       end
       self.delete_train(train)
-      return true
+      true
     else
-      return false
+      false
     end
   end
 

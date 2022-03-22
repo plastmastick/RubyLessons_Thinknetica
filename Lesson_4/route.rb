@@ -8,9 +8,9 @@ class Route
   def add_station(station)
     if !self.route.include?(station)
       self.route.insert(self.route.length - 1, station)
-      return true
+      true
     else
-      return false
+      false
     end
   end
 
@@ -18,9 +18,9 @@ class Route
     if self.route.include?(station) && ![self.route.first, self.route.last].include?(station)
       self.train_station_update(station)
       self.route.delete(station)
-      return true
+      true
     else
-      return false
+      false
     end
   end
 
