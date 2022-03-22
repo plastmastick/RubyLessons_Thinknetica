@@ -19,7 +19,7 @@ class Interface
     when 3
       route_menu
     when 0
-      return
+      abort
     else
       puts "Неизвестная команда!"
       main_menu
