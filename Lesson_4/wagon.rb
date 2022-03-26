@@ -1,4 +1,6 @@
 class Wagon
+  include Manufacturer
+
   attr_reader :type, :number
   attr_accessor :train
 
