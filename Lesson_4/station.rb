@@ -16,10 +16,6 @@ class Station
     @trains = []
   end
 
-  def test
-    register_instance
-  end
-
   def show_trains_by_type(train_type)
     trains_by_type = []
     self.trains.each { |train| trains_by_type << train if train.type == train_type}
