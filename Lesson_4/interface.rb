@@ -249,8 +249,9 @@ class Interface
   end
 
   def create_train(type)
-    puts "Введите номер поезда:"
+    puts "Введите номер поезда(0 для выхода):"
     number = gets.chomp
+    return if number.to_i.zero?
 
     if type == "cargo"
       self.railway.trains << CargoTrain.new(number)
@@ -263,7 +264,8 @@ class Interface
 
     puts "Добавлен поезд #{railway.trains.last.number}"
   rescue RuntimeError => e
-    return puts "\nОшибка: #{e.message}"
+    puts "\nОшибка: #{e.message}"
+    create_train(type)
   end
 
   def send_train(train, forward)
