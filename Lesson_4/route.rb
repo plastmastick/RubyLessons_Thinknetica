@@ -4,8 +4,9 @@ class Route
   attr_reader :route
 
   def initialize(start_station, end_station)
-    register_instance
     @route = [start_station, end_station]
+    route_validate!
+    register_instance
   end
 
   def add_station(station)
@@ -27,6 +28,13 @@ class Route
     end
   end
 
+  def route_valid?
+    route_validate!
+    true
+  rescue
+    false
+  end
+
   private
 
   attr_writer :route
@@ -35,4 +43,11 @@ class Route
   def train_station_update(station)
     station.trains.each { |train| station.send_train(train, true) if train.train_route == self }
   end
+
+  def route_validate!
+    raise "Route can't be nil!" if @route.nil?
+    raise "Route should be have at least 2 station!" if @route.length < 2
+    @route.each { |station| raise "Object is't a station:\n#{station}" if !station.is_a? Station }
+  end
+
 end

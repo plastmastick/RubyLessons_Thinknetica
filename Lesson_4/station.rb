@@ -10,16 +10,17 @@ class Station
   end
 
   def initialize(name)
-    register_instance
-    @@stations << self
     @name = name
     @trains = []
+    name_validate!
+    register_instance
+    @@stations << self
   end
 
   def show_trains_by_type(train_type)
     trains_by_type = []
     self.trains.each { |train| trains_by_type << train if train.type == train_type}
-    return trains_by_type
+    trains_by_type
   end
 
   def add_train(train)
@@ -45,6 +46,13 @@ class Station
     end
   end
 
+  def name_valid?
+    name_validate!
+    true
+  rescue
+    false
+  end
+
   private
 
   attr_writer :trains
@@ -52,5 +60,10 @@ class Station
   #Нет подклассов. Поезд не должен удалять сам себя, т.к. отправкой занимается станция
   def delete_train(train)
     self.trains.delete(train) if @trains.include?(train) && train.current_station != self
+  end
+
+  def name_validate!
+    raise "Name can't be nil!" if @name.nil?
+    raise "Name should be at lest 2 symbols" if @name.length < 2
   end
 end

@@ -4,6 +4,8 @@ class Train
 
   attr_reader :type, :speed, :number, :train_route, :current_station, :route_info, :wagons
 
+  NAME_FORMAT = /^\w{3}([-]\w{2})?$/i
+
   @@trains = []
 
   def self.find(number)
@@ -11,9 +13,11 @@ class Train
   end
 
   def initialize(number)
+    @number = number
+    number_validate!
+
     register_instance
     @@trains << self
-    @number = number
     @type = self.train_type
     @wagons = []
     @speed = 0
@@ -84,6 +88,13 @@ class Train
     return [previous_station, next_station]
   end
 
+  def number_valid?
+    number_validate!
+    true
+  rescue
+    false
+  end
+
   protected
 
   #Влиять на скорость можно только через методы
@@ -97,5 +108,10 @@ class Train
   #Внутрення проверка, которая используется в подклассах
   def correct_wagon?(wagon)
     wagon.type == self.type && wagon.type != "undefined"
+  end
+
+  def number_validate!
+    raise "Name can't be nil!" if @number.nil?
+    raise "Name has invalid format!" if @number !~ NAME_FORMAT
   end
 end
