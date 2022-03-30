@@ -223,6 +223,9 @@ class Interface
       trains = self.railway.trains
     elsif type == "all" && !station.nil?
       trains = station.trains
+      #Ниже код для задания номер 8 закомментирован, т.к. нет смысла использовать в такой реализации
+      #P.S.: Можно расскоментировать и добавить условия ниже при необходимости
+      #station.trains_yield { |train| puts "#{trains.index(train) + 1}) #{train.number} (Тип #{train.type}, Количество вагонов: #{train.wagons.length});" }
     elsif type == "cargo"
       trains = station.show_trains_by_type("cargo")
       puts "Количество грузовых поездов: #{trains.length}"
@@ -232,8 +235,8 @@ class Interface
     end
     return puts "Нет поездов" if trains.length.zero?
 
-    puts "Список поездов:"
-    trains.each { |train| puts "#{trains.index(train) + 1}) #{train.number} (#{train.type});" }
+    puts "\nСписок поездов:"
+    trains.each { |train| puts "#{trains.index(train) + 1}) #{train.number} (Тип #{train.type}, Количество вагонов: #{train.wagons.length});" }
 
     puts "\nВыберите порядковый номер поезда для управления (0 для выхода):"
     user_option = gets.chomp.to_i
