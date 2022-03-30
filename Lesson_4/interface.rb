@@ -105,7 +105,7 @@ class Interface
   def train_submenu(train)
     puts "\n\nМеню управлением поездом #{train.number}"
     puts "Количество вагонов: #{train.wagons.length}"
-    if train.train_route.nil?
+    if !train.train_route.nil?
       route_info = train.route_info
       route_info[0].nil? ? previous_station = "---" : previous_station = route_info[0].name
       route_info[1].nil? ? next_station = "---" : next_station = route_info[1].name
@@ -115,10 +115,13 @@ class Interface
     end
 
     puts "\nВыберите номер опции:"
-    puts "\n1) Назначить маршрут\n2) Добавить вагон\n3) Отцепить вагон\n4) Отправить поезд вперед\n5) Отправить поезд назад\n6) Выход в главное меню"
+    puts "\n1) Назначить маршрут\n2) Добавить вагон\n3) Отцепить вагон"
+    puts "4) Отправить поезд вперед\n5) Отправить поезд назад\n6) Список вагонов\n0) Выход в главное меню"
     user_option = gets.chomp.to_i
 
     case user_option
+    when 0
+      main_menu
     when 1
       assign_train_route(train)
       train_submenu(train)
@@ -135,7 +138,8 @@ class Interface
       send_train(train, false)
       train_submenu(train)
     when 6
-      main_menu
+      show_wagons(train)
+      train_submenu(train)
     else
       puts "Неизвестная команда!"
       train_submenu(train)
@@ -147,18 +151,18 @@ class Interface
     puts "\n\nМеню управлением маршрутам"
     puts "Количество маршрутов: #{self.railway.routes.length}"
     puts "\nВыберите номер опции:"
-    puts "\n1) Создать маршрут\n2) Список маршрутов\n3) Выход в главное меню"
+    puts "\n1) Создать маршрут\n2) Список маршрутов\n0) Выход"
     user_option = gets.chomp.to_i
 
     case user_option
-    when 1 #Создание маршрута
+    when 0
+      main_menu
+    when 1
       create_route
       route_menu
-    when 2 #Список маршрутов
+    when 2
       show_routes
-    when 3 #Выход в главное меню
-      main_menu
-    else  #Ошибка
+    else
       puts "Неизвестная команда!"
       route_menu
     end
@@ -172,17 +176,17 @@ class Interface
     return if user_option.zero?
 
     case user_option
-    when 1  #Добавить промежуточную
+    when 1
       add_intermediate_station()
       return
-    when 2  #Удалить промежуточную
+    when 2
       delete_intermediate_station()
       return
-    when 3  #Список станций в маршруте
+    when 3
       puts "Список станций в маршруте:"
       route.route.each { |station| puts "#{route.route.index(station) + 1}) Станция #{station.name}"}
       return
-    else  #Ошибка
+    else
       puts "Неизвестная команда"
     end
   end
@@ -192,29 +196,25 @@ class Interface
   def create_station
     puts "\nВведите название станции (СТОП для выхода):"
     user_option = gets.chomp
+    return if user_option.downcase == "стоп"
 
-    if user_option.downcase != "стоп"
-      new_station = Station.new(user_option)
-      self.railway.stations << new_station
-      puts "\nДобавлена новая станция #{new_station.name}"
-    end
+    new_station = Station.new(user_option)
+    self.railway.stations << new_station
+    puts "\nДобавлена новая станция #{new_station.name}"
   end
 
   def show_stations
-    if self.railway.stations.length > 0
-      puts "Список станций:"
-      self.railway.stations.each { |station| puts "#{self.railway.stations.index(station) + 1}) #{station.name} (Количество поездов: #{station.trains.length});" }
-      puts "Для управления нужной станцией введите её порядковый номер (0 для выхода):"
-      user_option = gets.chomp.to_i
+    return puts "Нет станций!" if self.railway.stations.length.zero?
 
-      if (1..self.railway.stations.length).include?(user_option)
-        station_submenu(self.railway.stations[user_option - 1])
-      elsif user_option != 0
-        puts "Неизвестная команда!"
-      end
-    else
-      puts "Нет станций!"
-    end
+    puts "Список станций:"
+    self.railway.stations.each { |station| puts "#{self.railway.stations.index(station) + 1}) #{station.name} (Количество поездов: #{station.trains.length});" }
+
+    puts "Для управления нужной станцией введите её порядковый номер (0 для выхода):"
+    user_option = gets.chomp.to_i
+    return if user_option.zero?
+    return puts "Неизвестная команда!" if !(1..self.railway.stations.length).include?(user_option)
+
+    station_submenu(self.railway.stations[user_option - 1])
   end
 
   def show_trains(station = nil, type)
@@ -230,22 +230,17 @@ class Interface
       trains = station.show_trains_by_type("passenger")
       puts "Количество пассажирских поездов: #{trains.length}"
     end
+    return puts "Нет поездов" if trains.length.zero?
 
-    if self.railway.trains.length > 0
-      puts "Список поездов:"
-      trains.each { |train| puts "#{trains.index(train) + 1}) #{train.number} (#{train.type});" }
-      puts "\nВыберите порядковый номер поезда для управления (0 для выхода):"
-      user_option = gets.chomp.to_i
-      return if user_option.zero?
+    puts "Список поездов:"
+    trains.each { |train| puts "#{trains.index(train) + 1}) #{train.number} (#{train.type});" }
 
-      if (1..trains.length).include?(user_option)
-        train_submenu(trains[user_option - 1])
-      else
-        puts "Неизвестная команда!"
-      end
-    else
-      puts "Отсутствуют"
-    end
+    puts "\nВыберите порядковый номер поезда для управления (0 для выхода):"
+    user_option = gets.chomp.to_i
+    return if user_option.zero?
+    return puts "Неизвестная команда!" if !(1..trains.length).include?(user_option)
+
+    train_submenu(trains[user_option - 1])
   end
 
   def create_train(type)
@@ -258,8 +253,7 @@ class Interface
     elsif type == "passenger"
       self.railway.trains << PassengerTrain.new(number)
     else
-      puts "Ошибка! Некорректный тип поезда"
-      return
+      return puts "Ошибка! Некорректный тип поезда"
     end
 
     puts "Добавлен поезд #{railway.trains.last.number}"
@@ -279,7 +273,7 @@ class Interface
   end
 
   def assign_train_route(train)
-    return puts "Нет маршрутов!" if self.railway.routes.length > 0
+    return puts "Нет маршрутов!" if self.railway.routes.length.zero?
 
     puts "Список маршрутов:"
     self.railway.routes.each { |route| puts "#{self.railway.routes.index(route) + 1}) Маршрут #{route.route.first.name} -> #{route.route.last.name}"}
@@ -287,13 +281,10 @@ class Interface
     puts "\nВыберите порядковый номер маршрута для назначения (0 для выхода):"
     user_option = gets.chomp.to_i
     return if user_option.zero?
+    return puts "Неизвестная команда!" if !(1..self.railway.routes.length).include?(user_option)
 
-    if (1..self.railway.routes.length).include?(user_option)
-      train.set_route(self.railway.routes[user_option - 1])
-      puts "Поезд #{train.number} движется по маршруту #{self.railway.routes[user_option - 1].route.first.name} -> #{self.railway.routes[user_option - 1].route.last.name}"
-    else
-      puts "Неизвестная команда!"
-    end
+    train.set_route(self.railway.routes[user_option - 1])
+    puts "Поезд #{train.number} движется по маршруту #{self.railway.routes[user_option - 1].route.first.name} -> #{self.railway.routes[user_option - 1].route.last.name}"
   end
 
   def add_train_wagon(train)
@@ -306,15 +297,12 @@ class Interface
     puts "\nВыберите вагон для прикрепления (0 для выхода):"
     user_option = gets.chomp.to_i
     return if user_option.zero?
+    return puts "Неизвестная команда!" if !(1..empty_wagons.length).include?(user_option)
 
-    if (1..empty_wagons.length).include?(user_option)
-      if train.add_wagon(empty_wagons[user_option - 1])
-        puts "Вагон #{empty_wagons[user_option - 1].number} прикреплен к поезду #{train.number}"
-      else
-        puts "Ошибка при прикреплении вагона!"
-      end
+    if train.add_wagon(empty_wagons[user_option - 1])
+      puts "Вагон #{empty_wagons[user_option - 1].number} прикреплен к поезду #{train.number}"
     else
-      puts "Неизвестная команда!"
+      puts "Ошибка при прикреплении вагона!"
     end
   end
 
@@ -327,15 +315,12 @@ class Interface
     puts "\nВыберите вагон для отцепления (0 для выхода):"
     user_option = gets.chomp.to_i
     return if user_option.zero?
+    return puts "Неизвестная команда!" if !(1..train.wagons.length).include?(user_option)
 
-    if (1..train.wagons.length).include?(user_option)
-      if train.remove_wagon(train.wagons[user_option - 1])
-        puts "Вагон открелен от поезда #{train.number}"
-      else
-        puts "Ошибка при открпелении вагона!"
-      end
+    if train.remove_wagon(train.wagons[user_option - 1])
+      puts "Вагон открелен от поезда #{train.number}"
     else
-      puts "Неизвестная команда!"
+      puts "Ошибка при открпелении вагона!"
     end
   end
 
@@ -348,26 +333,18 @@ class Interface
     puts "\nВведите порядковый номер начальной станции из списка (0 для выхода):"
     user_option = gets.chomp.to_i
     return if user_option.zero?
+    return puts "Неизвестная команда!" if !(1..self.railway.stations.length).include?(user_option)
 
     first_station = nil
-    if (1..self.railway.stations.length).include?(user_option)
-      first_station = self.railway.stations[user_option - 1]
-    else
-      puts "Неизвестная команда!"
-      return
-    end
+    first_station = self.railway.stations[user_option - 1]
 
     puts "\nВведите порядковый номер конечной станции из списка (0 для выхода):"
     user_option = gets.chomp.to_i
     return if user_option.zero?
+    return puts "Неизвестная команда!" if !(1..self.railway.stations.length).include?(user_option)
 
     last_station = nil
-    if (1..self.railway.stations.length).include?(user_option)
-      last_station = self.railway.stations[user_option - 1]
-    else
-      puts "Неизвестная команда!"
-      return
-    end
+    last_station = self.railway.stations[user_option - 1]
 
     return puts "Станции совпадают!" if first_station == last_station
     self.railway.routes << Route.new(first_station, last_station)
@@ -382,12 +359,9 @@ class Interface
     puts "Введите порядковый номер маршрута (0 для выхода):"
     user_option = gets.chomp.to_i
     return if user_option.zero?
+    return puts "Неизвестная команда!" if !(1..self.railway.routes.length).include?(user_option)
 
-    if (1..self.railway.routes.length).include?(user_option)
-      route_submenu(self.railway.routes[user_option - 1])
-    else
-      puts "Неизвестная команда!"
-    end
+    route_submenu(self.railway.routes[user_option - 1])
   end
 
   def add_intermediate_station(route)
@@ -400,15 +374,12 @@ class Interface
     puts "Введите номер добавляемой станции(0 для выхода):"
     user_option = gets.chomp.to_i
     return if user_option.zero?
+    return puts "Некорректный номер!" if !(1..self.railway.stations.length).include?(user_option)
 
-    if (1..self.railway.stations.length).include?(user_option)
-      if route.add_station(self.railway.stations[user_option - 1])
-        puts "Станция #{self.railway.stations[user_option - 1].name} добавлена в маршрут"
-      else
-        puts "Ошибка при добавлении станции!"
-      end
+    if route.add_station(self.railway.stations[user_option - 1])
+      puts "Станция #{self.railway.stations[user_option - 1].name} добавлена в маршрут"
     else
-      puts "Некорректный номер!"
+      puts "Ошибка при добавлении станции!"
     end
   end
 
@@ -417,27 +388,66 @@ class Interface
     puts "Список станций маршрута:"
     route.route.each { |station| puts "#{route.route.index(station) + 1}) #{station.name}" }
 
-    puts "Введите номер удаляемой станции(0 для выхода):"
+    puts "\nВведите номер удаляемой станции (0 для выхода):"
     user_option = gets.chomp.to_i
     return if user_option.zero?
+    return puts "Некорректный номер!" if !(1..route.route.length).include?(user_option)
 
-    if (1..route.route.length).include?(user_option)
-      if route.delete_station(route.route[user_option - 1])
-        puts "Станция удалена из маршрута"
-      else
-        puts "Ошибка при удалении станции!"
-      end
+    if route.delete_station(route.route[user_option - 1])
+      puts "Станция удалена из маршрута"
     else
-      puts "Некорректный номер!"
+      puts "Ошибка при удалении станции!"
     end
   end
 
   def create_wagon(type)
+    puts type == "cargo" ? "\nВведите объем вагона:" : "\nВведите количество мест в вагоне:"
+    user_value = gets.chomp.to_i
+
     if type == "passenger"
-      self.railway.wagons << PassengerWagon.new("PW-#{self.railway.wagons.length + 1}")
+      self.railway.wagons << PassengerWagon.new("PW-#{self.railway.wagons.length + 1}", user_value)
     elsif type == "cargo"
-      self.railway.wagons << CargoWagon.new("CW-#{self.railway.wagons.length + 1}")
+      self.railway.wagons << CargoWagon.new("CW-#{self.railway.wagons.length + 1}", user_value)
+    else
+      return puts "Неизвестный тип вагона"
     end
-    puts "Создан вагон #{self.railway.wagons.last.number} (Тип: #{self.railway.wagons.last.type})"
+    puts "\nСоздан вагон #{self.railway.wagons.last.number} (Тип: #{self.railway.wagons.last.type})"
+
+  rescue RuntimeError => e
+    puts "\nОшибка: #{e.message}"
+    create_wagon(type)
+  end
+
+  def show_wagons(train)
+    return puts "Нет вагонов!" if train.wagons.length.zero?
+
+    train.wagons_yield do |x|
+      puts "#{train.wagons.index(x) + 1}) №#{x.number} Тип:#{x.type}"
+      puts x.type == "cargo" ? "\nОбъем #{x.occupied_volume}/#{x.max_volume}" : "\nКоличество мест #{x.occupied_seats}/#{x.max_seats}"
+    end
+
+    puts "\nВведите номер вагона (0 для выхода):"
+    user_option = gets.chomp.to_i
+    return if user_option.zero?
+    return puts "Неизвестная команда!" if !(1..train.wagons.length).include?(user_option)
+
+    take_wagon_place(train.wagons[user_option - 1])
+  end
+
+  def take_wagon_place(wagon)
+    if wagon.type == "passenger"
+      wagon.take_seat
+      puts "\nЗанято 1 место. Количество мест #{wagon.occupied_seats}/#{wagon.max_seats}"
+    elsif wagon.type == "cargo"
+      puts "\nУкажите объем погрузки"
+      user_value = gets.chomp.to_i
+      wagon.take_volume(user_value)
+      puts "\nПогрузка выполнена. Объем #{wagon.occupied_volume}/#{wagon.max_volume}"
+    else
+      return puts "Неизвестный тип вагона"
+    end
+  rescue RuntimeError => e
+    puts "\nОшибка: #{e.message}"
+    take_wagon_place(wagon)
   end
 end

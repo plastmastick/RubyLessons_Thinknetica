@@ -25,6 +25,10 @@ class Train
     @train_route = nil
   end
 
+  def wagons_yield
+    @wagons.each { |wagon| yield wagon}
+  end
+
   def increase_speed
     self.speed += 10
   end
