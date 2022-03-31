@@ -8,9 +8,13 @@ class PassengerWagon < Wagon
     @occupied_seats = 0
   end
 
-  def take_seat; self.occupied_seats += 1 if @occupied_seats < @max_seats; end
+  def take_seat
+    self.occupied_seats += 1 if @occupied_seats < @max_seats
+  end
 
-  def empty_seats; return self.max_seats - self.occupied_seats; end
+  def empty_seats
+    return self.max_seats - self.occupied_seats
+  end
 
   def seats_validate?
     seats_validate!
