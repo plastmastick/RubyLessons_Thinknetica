@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Route
   include InstanceCounter
 
@@ -10,44 +12,45 @@ class Route
   end
 
   def add_station(station)
-    if !self.route.include?(station)
-      self.route.insert(self.route.length - 1, station)
-      true
-    else
-      false
-    end
+    add_station_validate!(station)
+    route.insert(route.length - 1, station)
   end
 
   def delete_station(station)
-    if self.route.include?(station) && ![self.route.first, self.route.last].include?(station)
-      self.train_station_update(station)
-      self.route.delete(station)
-      true
-    else
-      false
-    end
+    delete_station_validate!(station)
+    train_station_update(station)
+    route.delete(station)
   end
 
   def route_valid?
     route_validate!
     true
-  rescue
+  rescue StandardError
     false
   end
 
   private
 
   attr_writer :route
-  #Отправка поезда при удалении станции из маршрута
-  #Внутренний метод, который не должен быть доступен извне для избежания багов
+
   def train_station_update(station)
     station.trains.each { |train| station.send_train(train, true) if train.train_route == self }
   end
 
   def route_validate!
     raise "Route can't be nil!" if @route.nil?
-    raise "Route should be have at least 2 station!" if @route.length < 2
-    @route.each { |station| raise "Object is't a station:\n#{station}" if !station.is_a? Station }
+    raise 'Route should be have at least 2 station!' if @route.length < 2
+    raise 'First and last stations should be different!' if @route.first == @route.last
+
+    @route.each { |station| raise "Object is't a station:\n#{station}" unless station.is_a? Station }
   end
 
+  def add_station_validate!(station)
+    raise "Route alredy include #{station}!" if route.include?(station)
+  end
+
+  def delete_station_validate!(station)
+    raise "Route not include #{station}" unless route.include?(station)
+    raise "Can't delete first or last station" if [route.first, route.last].include?(station)
+  end
 end

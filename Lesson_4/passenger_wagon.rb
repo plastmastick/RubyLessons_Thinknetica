@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class PassengerWagon < Wagon
   attr_reader :max_seats, :occupied_seats
 
@@ -13,13 +15,13 @@ class PassengerWagon < Wagon
   end
 
   def empty_seats
-    return self.max_seats - self.occupied_seats
+    max_seats - self.occupied_seats
   end
 
   def seats_validate?
     seats_validate!
     true
-  rescue
+  rescue StandardError
     false
   end
 
@@ -27,9 +29,8 @@ class PassengerWagon < Wagon
 
   attr_writer :occupied_seats
 
-
   def wagon_type
-    "passenger"
+    'passenger'
   end
 
   def seats_validate!

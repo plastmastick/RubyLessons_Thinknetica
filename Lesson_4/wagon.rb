@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Wagon
   include Manufacturer
 
@@ -14,15 +16,15 @@ class Wagon
   def number_valid?
     number_validate!
     true
-  rescue
+  rescue StandardError
     false
   end
 
   protected
 
-  #Тип - константа класса
+  # Тип - константа класса
   def wagon_type
-    "undefined"
+    'undefined'
   end
 
   def number_validate!

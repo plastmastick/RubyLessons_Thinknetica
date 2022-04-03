@@ -1,15 +1,22 @@
+# frozen_string_literal: true
+
 class Train
   include Manufacturer
   include InstanceCounter
 
-  attr_reader :type, :speed, :number, :train_route, :current_station, :route_info, :wagons
+  attr_reader :type, :speed, :number, :train_route, :current_station, :wagons
 
-  NAME_FORMAT = /^\w{3}([-]\w{2})?$/i
+  NAME_FORMAT = /^\w{3}(-\w{2})?$/i.freeze
 
-  @@trains = []
+  @trains = []
 
   def self.find(number)
-    @@trains.find { |train| train.number == number }
+    @trains.find { |train| train.number == number }
+  end
+
+  def self.add_train(train)
+    @trains ||= []
+    @trains << train
   end
 
   def initialize(number)
@@ -17,16 +24,16 @@ class Train
     number_validate!
 
     register_instance
-    @@trains << self
-    @type = self.train_type
+    self.class.add_train(self)
+    @type = train_type
     @wagons = []
     @speed = 0
     @current_station = nil
     @train_route = nil
   end
 
-  def wagons_yield
-    @wagons.each { |wagon| yield wagon}
+  def wagons_yield(&block)
+    @wagons.each(&block)
   end
 
   def increase_speed
@@ -38,84 +45,88 @@ class Train
   end
 
   def add_wagon(wagon)
-    if self.speed == 0 && correct_wagon?(wagon) && !self.wagons.include?(wagon)
-      self.wagons << wagon
-      wagon.train=(self)
-      true
-    else
-      false
-    end
+    manipulate_wagon_validate!(wagon, 'add')
+    wagons << wagon
+    wagon.train = (self)
   end
 
   def remove_wagon(wagon)
-    if self.speed == 0 && self.wagons.include?(wagon)
-      self.wagons.delete(wagon)
-      wagon.train=(nil)
-      true
-    else
-      false
-    end
+    manipulate_wagon_validate!(wagon, 'remove')
+    wagons.delete(wagon)
+    wagon.train = (nil)
   end
 
-  def set_route(route)
+  def select_route(route)
     @train_route = route
-    @current_station = @train_route.route[0]
+    @current_station = @train_route.route.first
     @current_station.add_train(self)
   end
 
   def next_station
-    if @train_route.route.last != @current_station
-      nearby_stations = self.route_info
-      @current_station = nearby_stations[1]
-      return false if !@current_station.add_train(self)
-      true
-    else
-      false
-    end
+    move_train_validate!('next')
+    nearby_stations = route_info
+    @current_station = nearby_stations[1]
+    @current_station.add_train(self)
   end
 
   def previous_station
-    if @train_route.route.first != @current_station
-      nearby_stations = self.route_info
-      @current_station = nearby_stations[0]
-      return false if !@current_station.add_train(self)
-      true
-    else
-      false
-    end
+    move_train_validate!('back')
+    nearby_stations = route_info
+    @current_station = nearby_stations[0]
+    @current_station.add_train(self)
   end
 
   def route_info
     route = @train_route.route
-    @current_station != route.first ? previous_station = route[route.index(@current_station) - 1] : previous_station = nil
-    @current_station != route.last ? next_station = route[route.index(@current_station) + 1] : next_station = nil
-    return [previous_station, next_station]
+    previous_station = @current_station == route.first ? nil : route[route.index(@current_station) - 1]
+    next_station = @current_station == route.last ? nil : route[route.index(@current_station) + 1]
+    [previous_station, next_station]
   end
 
   def number_valid?
     number_validate!
     true
-  rescue
+  rescue StandardError
     false
   end
 
   protected
 
-  #Влиять на скорость можно только через методы
   attr_writer :speed, :wagons
 
-  #Тип - константа класса, есть подклассы
   def train_type
-    "undefined"
+    'undefined'
   end
 
-  #Внутрення проверка, которая используется в подклассах
   def correct_wagon?(wagon)
-    wagon.type == self.type && wagon.type != "undefined"
+    wagon.type == type && wagon.type != 'undefined'
   end
 
   def number_validate!
     raise "Name can't be nil!" if @number.nil?
-    raise "Name has invalid format!" if @number !~ NAME_FORMAT
+    raise 'Name has invalid format!' if @number !~ NAME_FORMAT
+  end
+
+  def move_train_validate!(option)
+    raise 'Train is not at the station!' if current_station.nil?
+
+    case option
+    when 'next'
+      raise 'The train is at the start station' unless @train_route.route.last != @current_station
+    when 'back'
+      raise 'The train is at the end station' unless @train_route.route.first != @current_station
+    end
+  end
+
+  def manipulate_wagon_validate!(wagon, option)
+    raise 'Train speed should be a zero!' unless self.speed.zero?
+
+    case option
+    when 'add'
+      raise 'Incorrect type of wagon!' unless correct_wagon?(wagon)
+      raise "Train alredy include this wagon #{wagon}" if wagons.include?(wagon)
+    when 'remove'
+      raise "Train not include this wagon #{wagon}" unless wagons.include?(wagon)
+    end
   end
 end

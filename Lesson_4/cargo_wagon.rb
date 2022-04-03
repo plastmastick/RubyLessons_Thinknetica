@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CargoWagon < Wagon
   attr_reader :max_volume, :occupied_volume
 
@@ -14,13 +16,13 @@ class CargoWagon < Wagon
   end
 
   def free_volume
-    return @max_volume - @occupied_volume
+    @max_volume - @occupied_volume
   end
 
   def volume_validate?
     volume_validate!
     true
-  rescue
+  rescue StandardError
     false
   end
 
@@ -29,7 +31,7 @@ class CargoWagon < Wagon
   attr_writer :occupied_volume
 
   def wagon_type
-    "cargo"
+    'cargo'
   end
 
   def volume_validate!

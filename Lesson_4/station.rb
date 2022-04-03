@@ -1,12 +1,18 @@
+# frozen_string_literal: true
+
 class Station
   include InstanceCounter
 
   attr_reader :name, :trains
 
-  @@stations = []
+  @stations = []
 
   def self.all
-    @@stations
+    @stations
+  end
+
+  def self.add_station(station)
+    @stations << station
   end
 
   def initialize(name)
@@ -14,46 +20,39 @@ class Station
     @trains = []
     name_validate!
     register_instance
-    @@stations << self
+    self.class.add_station(self)
   end
 
-  def trains_yield
-    @trains.each { |train| yield train}
+  def trains_yield(&block)
+    @trains.each(&block)
   end
 
   def show_trains_by_type(train_type)
     trains_by_type = []
-    self.trains.each { |train| trains_by_type << train if train.type == train_type}
+    if train_type == 'any'
+      trains_by_type = @trains
+    else
+      trains.each { |train| trains_by_type << train if train.type == train_type }
+    end
     trains_by_type
   end
 
   def add_train(train)
-    if !@trains.include?(train) && train.current_station == self
-      self.trains << train
-      true
-    else
-      false
-    end
+    add_train_validate!(train)
+    trains << train
   end
 
   def send_train(train, forward)
-    if self.trains.include?(train) && train.current_station == self
-      if forward
-        return false if !train.next_station
-      else
-        return false if !train.previous_station
-      end
-      self.delete_train(train)
-      true
-    else
-      false
-    end
+    send_train_validate!
+    train.next_station if forward
+    train.previous_station unless forward
+    delete_train(train)
   end
 
   def name_valid?
     name_validate!
     true
-  rescue
+  rescue StandardError
     false
   end
 
@@ -61,13 +60,26 @@ class Station
 
   attr_writer :trains
 
-  #Нет подклассов. Поезд не должен удалять сам себя, т.к. отправкой занимается станция
   def delete_train(train)
-    self.trains.delete(train) if @trains.include?(train) && train.current_station != self
+    delete_train_validate!(train)
+    trains.delete(train)
   end
 
   def name_validate!
     raise "Name can't be nil!" if @name.nil?
-    raise "Name should be at lest 2 symbols" if @name.length < 2
+    raise 'Name should be at lest 2 symbols' if @name.length < 2
+  end
+
+  def send_train_validate!(train)
+    raise 'Train not at the station!' unless trains.include?(train)
+  end
+
+  def add_train_validate!(train)
+    raise 'Train alredy on the station!' if trains.include?(train)
+  end
+
+  def delete_train_validate!(train)
+    raise 'Train current station is equal selected station' if train.current_station == self
+    raise 'Train not at the station!' unless trains.include?(train)
   end
 end
