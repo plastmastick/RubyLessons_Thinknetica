@@ -3,8 +3,13 @@
 class Train
   include Manufacturer
   include InstanceCounter
+  include Accessors
+  include Validation
 
-  attr_reader :type, :speed, :number, :train_route, :current_station, :wagons
+  attr_reader :type, :number, :current_station, :wagons
+
+  attr_accessor_with_history :speed
+  strong_attr_accessor :train_route
 
   NAME_FORMAT = /^\w{3}(-\w{2})?$/i.freeze
 
@@ -21,15 +26,15 @@ class Train
 
   def initialize(number)
     @number = number
-    number_validate!
+    validate! number, :presence
+    validate! number, :format, NAME_FORMAT
 
     register_instance
     self.class.add_train(self)
     @type = train_type
     @wagons = []
-    @speed = 0
+    self.speed = 0
     @current_station = nil
-    @train_route = nil
   end
 
   def wagons_yield(&block)
@@ -57,8 +62,8 @@ class Train
   end
 
   def select_route(route)
-    @train_route = route
-    @current_station = @train_route.route.first
+    train_route_set(route, Route)
+    @current_station = train_route.route.first
     @current_station.add_train(self)
   end
 
@@ -77,22 +82,15 @@ class Train
   end
 
   def route_info
-    route = @train_route.route
+    route = train_route.route
     previous_station = @current_station == route.first ? nil : route[route.index(@current_station) - 1]
     next_station = @current_station == route.last ? nil : route[route.index(@current_station) + 1]
     [previous_station, next_station]
   end
 
-  def number_valid?
-    number_validate!
-    true
-  rescue StandardError
-    false
-  end
-
   protected
 
-  attr_writer :speed, :wagons
+  attr_writer :wagons
 
   def train_type
     'undefined'
@@ -102,19 +100,14 @@ class Train
     wagon.type == type && wagon.type != 'undefined'
   end
 
-  def number_validate!
-    raise "Name can't be nil!" if @number.nil?
-    raise 'Name has invalid format!' if @number !~ NAME_FORMAT
-  end
-
   def move_train_validate!(option)
-    raise 'Train is not at the station!' if current_station.nil?
+    validate! current_station, :presence
 
     case option
     when 'next'
-      raise 'The train is at the start station' unless @train_route.route.last != @current_station
+      raise 'The train is at the start station' if @train_route.route.last == @current_station
     when 'back'
-      raise 'The train is at the end station' unless @train_route.route.first != @current_station
+      raise 'The train is at the end station' if @train_route.route.first == @current_station
     end
   end
 
