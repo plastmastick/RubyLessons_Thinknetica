@@ -2,32 +2,22 @@
 
 class Wagon
   include Manufacturer
+  include Accessors
+  include Validation
 
   attr_reader :type, :number
-  attr_accessor :train
+
+  attr_accessor_with_history :train
 
   def initialize(number)
     @number = number
-    number_validate!
+    validate! number, :presence
     @type = wagon_type
-    @train = nil
-  end
-
-  def number_valid?
-    number_validate!
-    true
-  rescue StandardError
-    false
   end
 
   protected
 
-  # Тип - константа класса
   def wagon_type
     'undefined'
-  end
-
-  def number_validate!
-    raise "Name can't be nil!" if @number.nil?
   end
 end

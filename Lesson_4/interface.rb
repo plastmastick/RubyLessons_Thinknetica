@@ -9,8 +9,8 @@ class Interface
 
   def main_menu
     puts "\n\nУправление железной дорогой.\nГлавное меню.\nВыберите номер опции:"
-    puts "\n1) Управление станциями\n2) Управление поездами\3) Управление маршрутами"
-    puts "\n4) Создать пассажирский вагон\n5) Создать грузовой вагон\n0) Выход из программы"
+    puts "\n1) Управление станциями\n2) Управление поездами\n3) Управление маршрутами"
+    puts "4) Создать пассажирский вагон\n5) Создать грузовой вагон\n0) Выход из программы"
     user_option = gets.chomp.to_i
     abort if user_option.zero?
 
@@ -121,8 +121,8 @@ class Interface
   def train_wagon_menu(train)
     puts "\nУправление вагонами поезда #{train.number}"
     puts "Количество вагонов: #{train.wagons.length}"
-    puts "\nВыберите номер опции:"
-    puts "\n1) Добавить вагон\n2) Отцепить вагон\n3) Список вагонов\n4) Погрузка\n0) Выход"
+    puts "\nВыберите номер опции:\n1) Добавить вагон\n2) Отцепить вагон\n3) Список вагонов"
+    puts "4) Погрузка\n5) История прикрепленных поездов\n0) Выход"
     user_option = gets.chomp.to_i
     return if user_option.zero?
 
@@ -135,6 +135,8 @@ class Interface
       show_wagons(train)
     when 4
       wagon_manipulate(train, 'loading')
+    when 5
+      wagon_manipulate(train, 'history')
     else
       puts 'Неизвестная команда'
     end
@@ -371,6 +373,8 @@ class Interface
       user_wagon.type == 'passenger' ? take_wagon_place(user_wagon) : take_wagon_volume(user_wagon)
     when 'delete'
       delete_train_wagon(train, user_wagon)
+    when 'history'
+      show_wagon_history(user_wagon)
     end
   end
 
@@ -435,5 +439,17 @@ class Interface
     puts "Следующая станция: #{next_station}"
     puts "Текущая станция: #{train.current_station.name}"
     puts "Предыдущая станция: #{previous_station}"
+  end
+
+  def show_wagon_history(user_wagon)
+    return puts 'Пустая история!' if user_wagon.train_history.empty?
+
+    counter = 1
+    user_wagon.train_history.each do |train|
+      unless train.nil?
+        puts "#{counter}) #{train.number}"
+        counter += 1
+      end
+    end
   end
 end

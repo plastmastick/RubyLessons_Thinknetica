@@ -8,6 +8,8 @@ class PassengerWagon < Wagon
     @max_seats = max_seats
     seats_validate!
     @occupied_seats = 0
+    self.max_seats = max_seats
+    self.occupied_seats = 0
   end
 
   def take_seat
@@ -28,6 +30,7 @@ class PassengerWagon < Wagon
   protected
 
   attr_writer :occupied_seats
+  attr_writer :occupied_seats, :max_seats
 
   def wagon_type
     'passenger'

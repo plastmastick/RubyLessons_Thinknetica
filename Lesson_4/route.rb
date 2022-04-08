@@ -2,6 +2,7 @@
 
 class Route
   include InstanceCounter
+  include Validation
 
   attr_reader :route
 
