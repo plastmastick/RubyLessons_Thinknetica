@@ -103,7 +103,7 @@ class Train
   end
 
   def move_train_validate!(option)
-    raise 'Train is not at the station!' if current_station.nil?
+    validate! current_station, :presence
 
     case option
     when 'next'

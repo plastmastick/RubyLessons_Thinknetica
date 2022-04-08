@@ -2,6 +2,7 @@
 
 class Station
   include InstanceCounter
+  include Validation
 
   attr_reader :name, :trains
 
@@ -47,7 +48,7 @@ class Station
   end
 
   def send_train(train, forward)
-    send_train_validate!
+    send_train_validate!(train)
     train.next_station if forward
     train.previous_station unless forward
     delete_train(train)

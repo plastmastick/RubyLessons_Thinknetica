@@ -14,7 +14,7 @@ class CargoWagon < Wagon
 
   def take_volume(volume)
     take_volume_validate!(volume)
-    @occupied_volume += volume if @occupied_volume < @max_volume
+    @occupied_volume += volume
   end
 
   def free_volume

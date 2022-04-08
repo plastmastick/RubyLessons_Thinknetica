@@ -27,13 +27,6 @@ class Route
     route.delete(station)
   end
 
-  def route_valid?
-    route_validate!
-    true
-  rescue StandardError
-    false
-  end
-
   private
 
   attr_writer :route
