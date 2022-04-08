@@ -6,8 +6,12 @@ class Route
 
   attr_reader :route
 
+  validate :route, :presence
+  validate :route, :comparison_min_length, 2
+
   def initialize(start_station, end_station)
     @route = [start_station, end_station]
+    validate!
     route_validate!
     register_instance
   end
@@ -39,8 +43,6 @@ class Route
   end
 
   def route_validate!
-    raise "Route can't be nil!" if @route.nil?
-    raise 'Route should be have at least 2 station!' if @route.length < 2
     raise 'First and last stations should be different!' if @route.first == @route.last
 
     @route.each { |station| raise "Object is't a station:\n#{station}" unless station.is_a? Station }

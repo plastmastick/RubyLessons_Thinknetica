@@ -3,11 +3,13 @@
 class CargoWagon < Wagon
   attr_reader :max_volume, :occupied_volume
 
+  validate :max_volume, :presence
+  validate :max_volume, :comparison_min, 1
+
   def initialize(number, max_volume)
-    super(number)
     @max_volume = max_volume
-    volume_validate!
     @occupied_volume = 0
+    super(number)
   end
 
   def take_volume(volume)
@@ -19,23 +21,12 @@ class CargoWagon < Wagon
     @max_volume - @occupied_volume
   end
 
-  def volume_validate?
-    volume_validate!
-    true
-  rescue StandardError
-    false
-  end
-
   protected
 
-  attr_writer :occupied_volume
+  attr_writer :occupied_volume, :max_volume
 
   def wagon_type
     'cargo'
-  end
-
-  def volume_validate!
-    raise "Count of max places in wagon can't be nil or less then 1!" if @max_volume < 1 || @max_volume.nil?
   end
 
   def take_volume_validate!(volume)

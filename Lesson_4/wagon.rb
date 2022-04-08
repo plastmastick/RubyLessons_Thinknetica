@@ -8,11 +8,12 @@ class Wagon
   attr_reader :type, :number
 
   attr_accessor_with_history :train
+  validate :number, :persence
 
   def initialize(number)
     @number = number
-    validate! number, :presence
     @type = wagon_type
+    validate!
   end
 
   protected

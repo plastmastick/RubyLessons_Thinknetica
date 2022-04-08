@@ -5,6 +5,10 @@ class Station
 
   attr_reader :name, :trains
 
+  validate :name, :presence
+  validate :name, :type, String
+  validate :name, :comparison_min_length, 2
+
   @stations = []
 
   def self.all
@@ -18,7 +22,7 @@ class Station
   def initialize(name)
     @name = name
     @trains = []
-    name_validate!
+    validate!
     register_instance
     self.class.add_station(self)
   end
@@ -49,13 +53,6 @@ class Station
     delete_train(train)
   end
 
-  def name_valid?
-    name_validate!
-    true
-  rescue StandardError
-    false
-  end
-
   private
 
   attr_writer :trains
@@ -63,11 +60,6 @@ class Station
   def delete_train(train)
     delete_train_validate!(train)
     trains.delete(train)
-  end
-
-  def name_validate!
-    raise "Name can't be nil!" if @name.nil?
-    raise 'Name should be at lest 2 symbols' if @name.length < 2
   end
 
   def send_train_validate!(train)
