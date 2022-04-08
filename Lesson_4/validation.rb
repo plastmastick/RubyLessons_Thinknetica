@@ -15,10 +15,14 @@ module Validation
         raise 'Attribute have invalid format!' unless attr =~ param
       when :type
         raise 'Attribute have invalid type!' unless attr.is_a? param
-      when :comparison
-        raise "#{attr} less then #{param}" if eval("#{attr} #{param}")
+      when :comparison_min
+        raise "#{attr} less then #{param}" if attr < param
+      when :comparison_equal
+        raise "#{attr} eqal #{param}" if attr == param
+      when :not_include
+        raise "#{param} didn't include #{attr}" unless param.include?(attr)
       when :include
-        raise "#{param} didn't include #{attr}" if eval("#{param}.include?(#{attr})")
+        raise "#{param} include #{attr}" if param.include?(attr)
       else
         raise 'Unknown validation option!'
       end

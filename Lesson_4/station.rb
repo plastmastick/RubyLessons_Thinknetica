@@ -20,7 +20,7 @@ class Station
     @name = name
     @trains = []
     validate! @name, :presence
-    validate! @name, :comparison, '< 2'
+    validate! @name, :comparison_min, 2
     register_instance
     self.class.add_station(self)
   end
@@ -45,7 +45,7 @@ class Station
   end
 
   def send_train(train, forward)
-    validate! train, :include, "!#{trains}"
+    validate! train, :not_include, trains
     train.next_station if forward
     train.previous_station unless forward
     delete_train(train)
@@ -56,8 +56,8 @@ class Station
   attr_writer :trains
 
   def delete_train(train)
-    validate! train, :comparison, "== #{self}"
-    validate! train, :include, "!#{trains}"
+    validate! train.current_station, :comparison_equal, self
+    validate! train, :not_include, trains
     trains.delete(train)
   end
 end
